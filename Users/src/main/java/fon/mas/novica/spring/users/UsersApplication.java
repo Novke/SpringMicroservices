@@ -7,6 +7,7 @@ import fon.mas.novica.spring.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -27,8 +28,21 @@ public class UsersApplication {
     private final RolesRepository rolesRepository;
     private final UsersRepository usersRepository;
 
+    @Value("${config.source}")
+    String configSource;
+
+
     public static void main(String[] args) {
         SpringApplication.run(UsersApplication.class, args);
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    void configServerEchoTest(){
+        if ("Local".equalsIgnoreCase(configSource)) {
+            log.warn("Config source is Local!");
+        } else {
+            log.info("Config source: " + configSource);
+        }
     }
 
     @EventListener(ApplicationReadyEvent.class)
