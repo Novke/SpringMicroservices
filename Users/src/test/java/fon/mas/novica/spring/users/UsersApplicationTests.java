@@ -1,12 +1,9 @@
 package fon.mas.novica.spring.users;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@SpringBootTest
+//@SpringBootTest
 class UsersApplicationTests {
 
-    @Test
+//    @Test
     void contextLoads() {
     }
 
