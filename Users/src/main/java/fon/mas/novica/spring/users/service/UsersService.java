@@ -14,4 +14,6 @@ public interface UsersService {
     List<UserInfo> findAllUsers();
 
     void disableUser(String username);
+
+    void enableUser(String user);
 }

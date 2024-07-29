@@ -1,6 +1,7 @@
 package fon.mas.novica.spring.users.service.impl;
 
 import fon.mas.novica.spring.users.exception.UserAlreadyDisabledException;
+import fon.mas.novica.spring.users.exception.UserAlreadyEnabledException;
 import fon.mas.novica.spring.users.model.dto.user.CreateUserCmd;
 import fon.mas.novica.spring.users.model.dto.user.UserInfo;
 import fon.mas.novica.spring.users.model.entity.UserEntity;
@@ -52,6 +53,16 @@ public class UsersServiceImpl implements UsersService {
             if (!user.isEnabled()) throw new UserAlreadyDisabledException();
             user.setEnabled(false);
             usersRepository.save(user);
+    }
+
+    @Override
+    public void enableUser(String username) {
+        UserEntity user = usersRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        String.format("User with username %s does not exist", username)));
+        if (user.isEnabled()) throw new UserAlreadyEnabledException();
+        user.setEnabled(true);
+        usersRepository.save(user);
     }
 
 }

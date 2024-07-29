@@ -38,4 +38,10 @@ public class UsersController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
+    @PatchMapping("/{user}")
+    public ResponseEntity<?> enableUser(@PathVariable String user){
+        usersService.enableUser(user);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
 }
