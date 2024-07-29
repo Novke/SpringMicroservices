@@ -8,12 +8,16 @@ import fon.mas.novica.spring.users.repository.UsersRepository;
 import fon.mas.novica.spring.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UsersServiceImpl implements UsersService {
 
 
@@ -32,6 +36,21 @@ public class UsersServiceImpl implements UsersService {
             return usersRepository.findAll().stream()
                     .map(u -> mapper.map(u, UserInfo.class))
                     .toList();
+    }
+        public List<UserInfo> findActiveUsers() {
+            return usersRepository.findAllByEnabledTrue().stream()
+                    .map(u -> mapper.map(u, UserInfo.class))
+                    .toList();
+    }
+
+    @Override
+    public void disableUser(String username) {
+            UserEntity user = usersRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException(
+                            String.format("User with username %s does not exist", username)));
+            if (!user.isEnabled()) throw new DataIntegrityViolationException("User is already disabled!");
+            user.setEnabled(false);
+            usersRepository.save(user);
     }
 
 }

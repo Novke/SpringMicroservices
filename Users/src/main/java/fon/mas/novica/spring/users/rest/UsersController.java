@@ -23,9 +23,23 @@ public class UsersController {
     }
 
     @GetMapping
+    public ResponseEntity<List<UserInfo>> getActiveUsers(){
+        return ResponseEntity.ok(usersService.findActiveUsers());
+    }
+
+    @GetMapping("/all")
     public ResponseEntity<List<UserInfo>> getAllUsers(){
         return ResponseEntity.ok(usersService.findAllUsers());
     }
 
+    @DeleteMapping("{user}")
+    public ResponseEntity<?> disableUser(@PathVariable String user){
+        try {
+            usersService.disableUser(user);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        } catch (Exception ex){
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
 }

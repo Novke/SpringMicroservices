@@ -22,7 +22,9 @@ public class UserEntity {
     @Column(nullable = false)
     private String password;
     @ManyToOne(optional = false)
-    private Role role;
+    private RoleEntity role;
+    @Column(columnDefinition = "boolean default true")
+    private boolean enabled = true;
 
 
 }

@@ -1,6 +1,6 @@
 package fon.mas.novica.spring.users;
 
-import fon.mas.novica.spring.users.model.entity.Role;
+import fon.mas.novica.spring.users.model.entity.RoleEntity;
 import fon.mas.novica.spring.users.model.entity.UserEntity;
 import fon.mas.novica.spring.users.repository.RolesRepository;
 import fon.mas.novica.spring.users.repository.UsersRepository;
@@ -38,11 +38,13 @@ public class UsersApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     void configServerEchoTest(){
+        log.info("========== REACHING CONFIG SERVER PROPERTIES ==========");
         if ("Local".equalsIgnoreCase(configSource)) {
             log.warn("Config source is Local!");
         } else {
             log.info("Config source: " + configSource);
         }
+        log.info("=======================================================");
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -50,8 +52,8 @@ public class UsersApplication {
         if (rolesRepository.count()==0){
             log.debug("Generating roles...");
             rolesRepository.saveAll(List.of(
-                    new Role(1L, "ROLE_USER"),
-                    new Role(2L, "ROLE_ADMIN")
+                    new RoleEntity(1L, "ROLE_USER"),
+                    new RoleEntity(2L, "ROLE_ADMIN")
             ));
         }
 
@@ -64,7 +66,8 @@ public class UsersApplication {
                             "lastname",
                             "user",
                             "pass",
-                            rolesRepository.findById(2L).orElseThrow()));
+                            rolesRepository.findById(2L).orElseThrow(),
+                            true));
         }
     }
 
