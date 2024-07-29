@@ -3,6 +3,7 @@ package fon.mas.novica.spring.users.advice;
 import fon.mas.novica.spring.users.exception.UserAlreadyDisabledException;
 import fon.mas.novica.spring.users.exception.UserAlreadyEnabledException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,7 +19,8 @@ public class ApiExceptionHandler {
     //4XX
     @ExceptionHandler(value = {
             UserAlreadyDisabledException.class,
-            UserAlreadyEnabledException.class
+            UserAlreadyEnabledException.class,
+            DataIntegrityViolationException.class
     })
     ResponseEntity<?> handleBadRequest(Exception ex){
         ApiException apiException = new ApiException(ex.getMessage(), ZonedDateTime.now());
