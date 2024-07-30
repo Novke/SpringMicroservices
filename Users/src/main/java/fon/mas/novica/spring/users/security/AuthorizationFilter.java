@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +19,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.util.Base64;
 
+@Slf4j
 public class AuthorizationFilter extends BasicAuthenticationFilter {
     private final Environment environment;
     private final UsersService usersService;
@@ -70,8 +72,14 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
                 .setSigningKey(secretKey)
                 .build();
 
-        Jwt<Header, Claims> jwt = jwtParser.parse(token);
-        String username = jwt.getBody().getSubject();
+        String username;
+        try {
+            Jwt<Header, Claims> jwt = jwtParser.parse(token);
+            username = jwt.getBody().getSubject();
+        } catch (ExpiredJwtException ex){
+            log.debug("Expired JWT! ", ex);
+            return null;
+        }
 
         if (username == null){
             return null;

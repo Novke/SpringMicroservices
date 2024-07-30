@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -57,17 +58,23 @@ public class WebSecurity {
          http.authorizeHttpRequests(
                 auth ->
                         auth
-                                .requestMatchers("/users/**").access(
-                                        new WebExpressionAuthorizationManager(
-                                                "hasIpAddress('" + gatewayAddr +"')"))
 
                                 .requestMatchers("/login").permitAll()
+
+//                                CHECK
                                 .requestMatchers("/check").permitAll()
                                 .requestMatchers("/user").authenticated()
                                 .requestMatchers("/admin").hasRole("ADMIN")
-                                .requestMatchers("/users/all").hasRole("ADMIN")
-                                .requestMatchers("/users/**").authenticated()
 
+//                                USERS CONTROLLER
+                                .requestMatchers("/users/all").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET,"/users/**").authenticated()
+                                .requestMatchers("/users/**").hasRole("ADMIN")
+
+                                //problem je sto se ovo ignorise ako je neki od onih gore uslova zadovoljen
+                                .requestMatchers("/users/**").access(
+                                        new WebExpressionAuthorizationManager(
+                                                "hasIpAddress('" + gatewayAddr +"')"))
 
                                 .anyRequest().permitAll()
         );

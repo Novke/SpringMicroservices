@@ -2,7 +2,9 @@ package fon.mas.novica.spring.users.service.impl;
 
 import fon.mas.novica.spring.users.exception.UserAlreadyDisabledException;
 import fon.mas.novica.spring.users.exception.UserAlreadyEnabledException;
+import fon.mas.novica.spring.users.model.dto.login.UpdatePasswordCmd;
 import fon.mas.novica.spring.users.model.dto.user.CreateUserCmd;
+import fon.mas.novica.spring.users.model.dto.user.UserInsight;
 import fon.mas.novica.spring.users.model.dto.user.UserInfo;
 import fon.mas.novica.spring.users.model.entity.UserEntity;
 import fon.mas.novica.spring.users.repository.RolesRepository;
@@ -10,6 +12,7 @@ import fon.mas.novica.spring.users.repository.UsersRepository;
 import fon.mas.novica.spring.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -37,10 +40,17 @@ public class UsersServiceImpl implements UsersService {
             UserEntity createdUser = usersRepository.save(userRequest);
             return mapper.map(createdUser, UserInfo.class);
         }
+        public UserInfo createAdmin(CreateUserCmd user) {
+            UserEntity userRequest = mapper.map(user, UserEntity.class);
+            userRequest.setRole(rolesRepository.findById(2L).orElseThrow());
+            userRequest.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+            UserEntity createdUser = usersRepository.save(userRequest);
+            return mapper.map(createdUser, UserInfo.class);
+        }
 
-        public List<UserInfo> findAllUsers() {
+        public List<UserInsight> findAllUsers() {
             return usersRepository.findAll().stream()
-                    .map(u -> mapper.map(u, UserInfo.class))
+                    .map(u -> mapper.map(u, UserInsight.class))
                     .toList();
     }
         public List<UserInfo> findActiveUsers() {
@@ -67,6 +77,18 @@ public class UsersServiceImpl implements UsersService {
         if (user.isEnabled()) throw new UserAlreadyEnabledException();
         user.setEnabled(true);
         usersRepository.save(user);
+    }
+
+    @Override
+    public void updatePassword(UpdatePasswordCmd cmd) {
+        UserEntity user = usersRepository.findByUsername(cmd.getUsername())
+                .orElseThrow(() -> new DataIntegrityViolationException("Wrong username or password"));
+        if (passwordEncoder.matches(cmd.getConfirmPassword(), user.getPassword())){
+            user.setPassword(passwordEncoder.encode(cmd.getNewPassword()));
+            usersRepository.save(user);
+        } else {
+            throw new DataIntegrityViolationException("Wrong username or password");
+        }
     }
 
     @Override

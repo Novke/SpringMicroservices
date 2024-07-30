@@ -61,6 +61,7 @@ public class UsersApplication {
             usersRepository.save(
                     new UserEntity(
                             null,
+                            "default@email.com",
                             "name",
                             "lastname",
                             "user",
