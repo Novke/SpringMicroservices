@@ -1,6 +1,8 @@
 package fon.mas.novica.spring.service.impl;
 
 import feign.FeignException;
+import fon.mas.novica.spring.exception.ProjectNotFoundException;
+import fon.mas.novica.spring.exception.TaskNotFoundException;
 import fon.mas.novica.spring.exception.UserNotFoundException;
 import fon.mas.novica.spring.io.UsersServiceClient;
 import fon.mas.novica.spring.model.dto.project.CreateProjectCmd;
@@ -18,6 +20,8 @@ import fon.mas.novica.spring.service.ProjectsService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,7 +72,7 @@ public class ProjectsServiceImpl implements ProjectsService {
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
         ProjectEntity project = projectsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Project with id " + id + " not found!"));
+                .orElseThrow(() -> new ProjectNotFoundException("Project with id " + id + " not found!"));
         UserInfo asignee = findUserById(cmd.getAssigneeId());
         UserInfo supervisor = findUserById(cmd.getSupervisorId());
 
@@ -93,9 +97,7 @@ public class ProjectsServiceImpl implements ProjectsService {
 
         List<TaskInfo> tasks = new ArrayList<>();
         project.getTasks().forEach(te -> {
-                    TaskInfo taskInfo = mapper.map(te, TaskInfo.class);
-                    taskInfo.setAssigneeName(getUserFullNameSilently(te.getAssigneeId()));
-                    taskInfo.setSupervisorName(getUserFullNameSilently(te.getSupervisorId()));
+                    TaskInfo taskInfo = taskEntityToTaskInfo(te);
 
                     tasks.add(taskInfo);
                 }
@@ -107,10 +109,33 @@ public class ProjectsServiceImpl implements ProjectsService {
         return projectDetails;
     }
 
+    @Override
+    public TaskInfo setTaskStatus(Long id, Status status) {
+        TaskEntity task = tasksRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException(String.format("Task with id %s not found!", id)));
+
+        task.setStatus(status);
+        if (status == Status.FINISHED) task.setEndDate(LocalDate.now());
+
+        return taskEntityToTaskInfo(tasksRepository.save(task));
+    }
+
+    private String getAuthenticatedUser(){
+        return SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    }
+
+    private TaskInfo taskEntityToTaskInfo(TaskEntity entity){
+        TaskInfo taskInfo = mapper.map(entity, TaskInfo.class);
+        taskInfo.setAssigneeName(getUserFullNameSilently(entity.getAssigneeId()));
+        taskInfo.setSupervisorName(getUserFullNameSilently(entity.getSupervisorId()));
+
+        return taskInfo;
+    }
+
     private String getUserFullNameSilently(Long id){
         try {
             return findUserById(id).getFullName();
-        } catch (Exception ex){
+        } catch (Exception ignored){
             return "UNKOWN";
         }
     }

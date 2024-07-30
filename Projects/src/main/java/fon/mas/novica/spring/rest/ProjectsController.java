@@ -5,6 +5,7 @@ import fon.mas.novica.spring.model.dto.project.ProjectDetails;
 import fon.mas.novica.spring.model.dto.project.ProjectInfo;
 import fon.mas.novica.spring.model.dto.task.CreateTaskCmd;
 import fon.mas.novica.spring.model.dto.task.TaskInfo;
+import fon.mas.novica.spring.model.enums.Status;
 import fon.mas.novica.spring.service.ProjectsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -41,5 +42,14 @@ public class ProjectsController {
     @GetMapping("/{id}/info")
     public ResponseEntity<ProjectDetails> showProjectDetails(@PathVariable Long id){
         return ResponseEntity.ok(projectsService.showProjectDetails(id));
+    }
+
+    @PatchMapping("/tasks/{id}/start")
+    public ResponseEntity<TaskInfo> setTaskInProgress(@PathVariable Long id){
+        return ResponseEntity.ok(projectsService.setTaskStatus(id, Status.IN_PROGRESS));
+    }
+    @PatchMapping("/tasks/{id}/done")
+    public ResponseEntity<TaskInfo> setTaskFinished(@PathVariable Long id){
+        return ResponseEntity.ok(projectsService.setTaskStatus(id, Status.FINISHED));
     }
 }

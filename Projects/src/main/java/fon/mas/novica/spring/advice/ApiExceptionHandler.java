@@ -1,5 +1,7 @@
 package fon.mas.novica.spring.advice;
 
+import fon.mas.novica.spring.exception.ProjectNotFoundException;
+import fon.mas.novica.spring.exception.TaskNotFoundException;
 import fon.mas.novica.spring.exception.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,9 +15,19 @@ import java.time.ZonedDateTime;
 @Slf4j
 public class ApiExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
-    ResponseEntity<?> handleNotFound(UserNotFoundException ex){
+    ResponseEntity<?> handleUserNotFound(UserNotFoundException ex){
         ApiException apiException = new ApiException("User with id = " + ex.getId() + " not found!", ZonedDateTime.now());
         log.warn(ex.getMessage(), ex);
+
+        return new ResponseEntity<>(apiException, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = {
+            ProjectNotFoundException.class,
+            TaskNotFoundException.class})
+    ResponseEntity<?> handleEntityNotFound(RuntimeException ex){
+        ApiException apiException = new ApiException(ex.getMessage(), ZonedDateTime.now());
+        log.debug(ex.getMessage(), ex);
 
         return new ResponseEntity<>(apiException, HttpStatus.NOT_FOUND);
     }

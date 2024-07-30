@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class TaskInfo {
 
+    private Long id;
     private String title;
     private Status status;
     private TaskEntity.Priority priority;
