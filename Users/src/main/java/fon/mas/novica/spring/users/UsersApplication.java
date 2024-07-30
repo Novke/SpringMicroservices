@@ -30,8 +30,6 @@ public class UsersApplication {
 
     @Value("${config.source}")
     String configSource;
-    @Value("${token.secret}")
-    String tokenSecret;
 
     public static void main(String[] args) {
         SpringApplication.run(UsersApplication.class, args);

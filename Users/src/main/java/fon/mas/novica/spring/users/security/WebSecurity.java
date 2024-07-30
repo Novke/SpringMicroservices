@@ -19,8 +19,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class WebSecurity {
 
-//    @Value("${gateway.ip}")
-//    private String gatewayIp;
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
@@ -44,8 +42,11 @@ public class WebSecurity {
                 auth ->
                         auth
                                 .requestMatchers("/login").permitAll()
+                                .requestMatchers("/check").permitAll()
+                                .requestMatchers("/user").authenticated()
+                                .requestMatchers("/admin").hasRole("ADMIN")
                                 .requestMatchers("/users/all").hasRole("ADMIN")
-                                .requestMatchers("/**").authenticated()
+                                .requestMatchers("/users/**").authenticated()
 
 
                                 .anyRequest().permitAll()
