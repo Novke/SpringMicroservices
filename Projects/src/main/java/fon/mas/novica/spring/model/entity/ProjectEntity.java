@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -32,7 +33,12 @@ public class ProjectEntity {
     @Column(nullable = false)
     private Long supervisorId;
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
-    private List<TaskEntity> tasks;
+    private List<TaskEntity> tasks = new ArrayList<>();
+
+    public void addTask(TaskEntity task){
+        task.setProject(this);
+        tasks.add(task);
+    }
 
 }
 

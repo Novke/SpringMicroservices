@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Table(name = "tasks")
 public class TaskEntity {
 
-    enum Priority {
+    public enum Priority {
         LOW, NORMAL, HIGH
     }
 

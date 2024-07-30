@@ -18,4 +18,8 @@ public class UserInfo {
     private String lastName;
     private Boolean enabled;
 
+    public String getFullName(){
+        return firstName + " " + lastName;
+    }
+
 }
