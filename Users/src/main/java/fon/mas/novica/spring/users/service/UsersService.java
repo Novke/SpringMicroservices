@@ -4,6 +4,7 @@ import fon.mas.novica.spring.users.model.dto.login.UpdatePasswordCmd;
 import fon.mas.novica.spring.users.model.dto.user.CreateUserCmd;
 import fon.mas.novica.spring.users.model.dto.user.UserInsight;
 import fon.mas.novica.spring.users.model.dto.user.UserInfo;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface UsersService extends UserDetailsService {
     void enableUser(String user);
     void updatePassword(UpdatePasswordCmd cmd);
     UserInsight findById(Long id);
+
+    Boolean checkAuthorization(Authentication authentication, List<Long> ids);
 }

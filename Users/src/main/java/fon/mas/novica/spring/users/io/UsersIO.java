@@ -4,10 +4,10 @@ import fon.mas.novica.spring.users.model.dto.user.UserInsight;
 import fon.mas.novica.spring.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/internal/users")
@@ -19,9 +19,13 @@ public class UsersIO {
     public ResponseEntity<UserInsight> getUserById(@PathVariable Long id){
         return ResponseEntity.ok(usersService.findById(id));
     }
-//    @GetMapping("/{id}")
-//    public ResponseEntity<?> getUser(@PathVariable Long id){
-//        return ResponseEntity.ok();
-//    }
+    @PostMapping("/verify")
+    public ResponseEntity<Boolean> getUser(
+//            @RequestHeader("Authorization") String jwt,
+            Authentication authentication,
+            @RequestBody List<Long> ids){
+
+        return ResponseEntity.ok(usersService.checkAuthorization(authentication, ids));
+    }
 
 }

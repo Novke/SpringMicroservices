@@ -13,6 +13,7 @@ import fon.mas.novica.spring.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -97,6 +98,15 @@ public class UsersServiceImpl implements UsersService {
                 usersRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("No user with id " + id)),
                 UserInsight.class);
+    }
+
+    @Override
+    public Boolean checkAuthorization(Authentication authentication, List<Long> ids) {
+        String issuerUsername = authentication.getName();
+        Long issuerId = usersRepository.findIdByUsername(issuerUsername);
+        if (issuerId == null) return false;
+
+        return ids.contains(issuerId);
     }
 
     @Override

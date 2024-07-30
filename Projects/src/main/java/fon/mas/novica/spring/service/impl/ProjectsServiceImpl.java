@@ -3,6 +3,7 @@ package fon.mas.novica.spring.service.impl;
 import feign.FeignException;
 import fon.mas.novica.spring.exception.ProjectNotFoundException;
 import fon.mas.novica.spring.exception.TaskNotFoundException;
+import fon.mas.novica.spring.exception.UnauthorizedActionException;
 import fon.mas.novica.spring.exception.UserNotFoundException;
 import fon.mas.novica.spring.io.UsersServiceClient;
 import fon.mas.novica.spring.model.dto.project.CreateProjectCmd;
@@ -113,14 +114,16 @@ public class ProjectsServiceImpl implements ProjectsService {
         TaskEntity task = tasksRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException(String.format("Task with id %s not found!", id)));
 
+        checkAuthorization(List.of(task.getAssigneeId(), task.getSupervisorId()));
+
         task.setStatus(status);
         if (status == Status.FINISHED) task.setEndDate(LocalDate.now());
 
         return taskEntityToTaskInfo(tasksRepository.save(task));
     }
 
-    private String getAuthenticatedUser(){
-        return SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    private void checkAuthorization(List<Long> ids){
+        if (!usersService.verifyAuthorization(ids)) throw new UnauthorizedActionException();
     }
 
     private TaskInfo taskEntityToTaskInfo(TaskEntity entity){

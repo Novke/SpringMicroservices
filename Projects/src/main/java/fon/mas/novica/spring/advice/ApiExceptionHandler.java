@@ -2,6 +2,7 @@ package fon.mas.novica.spring.advice;
 
 import fon.mas.novica.spring.exception.ProjectNotFoundException;
 import fon.mas.novica.spring.exception.TaskNotFoundException;
+import fon.mas.novica.spring.exception.UnauthorizedActionException;
 import fon.mas.novica.spring.exception.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,13 @@ public class ApiExceptionHandler {
         log.warn(ex.getMessage(), ex);
 
         return new ResponseEntity<>(apiException, HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(UnauthorizedActionException.class)
+    ResponseEntity<?> handleUnauthorizedException(UnauthorizedActionException ex){
+        ApiException apiException = new ApiException("You are not authorized for this action!", ZonedDateTime.now());
+        log.debug(ex.getMessage(), ex);
+
+        return new ResponseEntity<>(apiException, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(value = {
