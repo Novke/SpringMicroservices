@@ -1,7 +1,12 @@
 package fon.mas.novica.spring.users.security;
 
 import fon.mas.novica.spring.users.service.UsersService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -14,9 +19,13 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
+
+import java.util.List;
 
 @EnableWebSecurity
 @Configuration
+@Slf4j
 public class WebSecurity {
 
     @Autowired
@@ -25,6 +34,10 @@ public class WebSecurity {
     UsersService usersService;
     @Autowired
     Environment environment;
+//    @Autowired
+//    DiscoveryClient discoveryClient;
+    @Autowired
+    ApplicationContext app;
 
     @Bean
     public SecurityFilterChain filter(HttpSecurity http) throws Exception {
@@ -38,9 +51,16 @@ public class WebSecurity {
         http.addFilter(new AuthenticationFilter(authenticationManager, usersService, environment));
         http.addFilter(new AuthorizationFilter(authenticationManager, usersService, environment));
 
+//        String gatewayAddr = environment.getProperty("gateway.ip");
+        final String gatewayAddr = gatewayIpAddress();
+
          http.authorizeHttpRequests(
                 auth ->
                         auth
+                                .requestMatchers("/users/**").access(
+                                        new WebExpressionAuthorizationManager(
+                                                "hasIpAddress('" + gatewayAddr +"')"))
+
                                 .requestMatchers("/login").permitAll()
                                 .requestMatchers("/check").permitAll()
                                 .requestMatchers("/user").authenticated()
@@ -52,12 +72,6 @@ public class WebSecurity {
                                 .anyRequest().permitAll()
         );
 
-//         http.authorizeHttpRequests(auth ->
-//                 auth.requestMatchers("/**")
-//                         .access((new WebExpressionAuthorizationManager(
-//                                 "hasIpAddress('" + gatewayIp + "')"
-//                         ))));
-
          http.csrf(AbstractHttpConfigurer::disable);
 
          http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -65,5 +79,20 @@ public class WebSecurity {
          http.headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
 
         return http.build();
+    }
+
+    private String gatewayIpAddress(){
+//        List<ServiceInstance> instances = discoveryClient.getInstances("Gateway");
+//        if (instances != null && !instances.isEmpty()){
+//            try {
+//                EurekaServiceInstance gateway = (EurekaServiceInstance) instances.get(0);
+//                return gateway.getInstanceInfo().getIPAddr();
+//            } catch (ClassCastException ignored){
+//                return instances.get(0).getHost();
+//            }
+//        }
+////        throw new RuntimeException("Gateway not found!!!");
+        log.warn("GATEWAY NOT FOUND!!! FALLING BACK TO DEFAULT ADDRESS");
+        return environment.getProperty("gateway.ip");
     }
 }
