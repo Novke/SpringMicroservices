@@ -17,4 +17,5 @@ public interface UsersService extends UserDetailsService {
     void disableUser(String username);
     void enableUser(String user);
     void updatePassword(UpdatePasswordCmd cmd);
+    UserInsight findById(Long id);
 }

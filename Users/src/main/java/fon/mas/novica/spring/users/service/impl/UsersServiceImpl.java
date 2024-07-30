@@ -92,6 +92,14 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
+    public UserInsight findById(Long id) {
+        return mapper.map(
+                usersRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("No user with id " + id)),
+                UserInsight.class);
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return usersRepository.findByUsername(username).map(
                 u -> new User(u.getUsername(),

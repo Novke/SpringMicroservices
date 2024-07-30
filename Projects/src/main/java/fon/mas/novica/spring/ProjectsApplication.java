@@ -1,5 +1,6 @@
 package fon.mas.novica.spring;
 
+import feign.Logger;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,12 +8,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 
 @SpringBootApplication
 @EnableDiscoveryClient
 @Slf4j
+@EnableFeignClients
 public class ProjectsApplication {
 
     @Value("${config.source}")
@@ -35,6 +38,11 @@ public class ProjectsApplication {
     @Bean
     ModelMapper mapper(){
         return new ModelMapper();
+    }
+
+    @Bean
+    Logger.Level feignLoggerLevel(){
+        return Logger.Level.BASIC;
     }
 
 }

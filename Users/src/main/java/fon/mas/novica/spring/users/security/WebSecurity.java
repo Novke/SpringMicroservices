@@ -74,7 +74,8 @@ public class WebSecurity {
 //                                        new WebExpressionAuthorizationManager(
 //                                                "hasIpAddress('" + gatewayAddr +"')"))
 //
-//                                .anyRequest().permitAll()
+
+                                .anyRequest().permitAll()
         );
 
          http.csrf(AbstractHttpConfigurer::disable);
