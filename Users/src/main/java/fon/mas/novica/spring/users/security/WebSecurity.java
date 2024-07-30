@@ -68,6 +68,10 @@ public class WebSecurity {
                                 .requestMatchers(HttpMethod.GET,"/users/**").authenticated()
                                 .requestMatchers("/users/**").hasRole("ADMIN")
 
+//                                Microservices COmmunication
+
+                                .requestMatchers("/internal/**").authenticated()
+
                  //LOGIKA PREBACENA U RequestOriginFilter !!!
 //                                //problem je sto se ovo ignorise ako je neki od onih gore uslova zadovoljen
 //                                .requestMatchers("/users/**").access(

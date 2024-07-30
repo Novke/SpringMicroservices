@@ -6,10 +6,10 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "users-ms")
+@FeignClient(name = "users-ms", configuration = FeignConfig.class)
 public interface UsersServiceClient {
 
     @GetMapping("/internal/users/{id}")
     @Retry(name = "users-ms")
-    public UserInfo findUserById(@PathVariable Long id);
+    UserInfo findUserById(@PathVariable Long id);
 }
