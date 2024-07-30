@@ -1,11 +1,14 @@
 package fon.mas.novica.spring;
 
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 
 @SpringBootApplication
@@ -28,6 +31,11 @@ public class ProjectsApplication {
             log.info("Config source: " + configSource);
         }
         log.info("===================================================");
+    }
+
+    @Bean
+    ModelMapper mapper(){
+        return new ModelMapper();
     }
 
 }
