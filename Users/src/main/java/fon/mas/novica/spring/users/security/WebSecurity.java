@@ -52,9 +52,6 @@ public class WebSecurity {
         http.addFilter(new AuthenticationFilter(authenticationManager, usersService, environment));
         http.addFilter(new AuthorizationFilter(authenticationManager, usersService, environment));
 
-//        String gatewayAddr = environment.getProperty("gateway.ip");
-        final String gatewayAddr = gatewayIpAddress();
-
          http.authorizeHttpRequests(
                 auth ->
                         auth
@@ -71,12 +68,13 @@ public class WebSecurity {
                                 .requestMatchers(HttpMethod.GET,"/users/**").authenticated()
                                 .requestMatchers("/users/**").hasRole("ADMIN")
 
-                                //problem je sto se ovo ignorise ako je neki od onih gore uslova zadovoljen
-                                .requestMatchers("/users/**").access(
-                                        new WebExpressionAuthorizationManager(
-                                                "hasIpAddress('" + gatewayAddr +"')"))
-
-                                .anyRequest().permitAll()
+                 //LOGIKA PREBACENA U RequestOriginFilter !!!
+//                                //problem je sto se ovo ignorise ako je neki od onih gore uslova zadovoljen
+//                                .requestMatchers("/users/**").access(
+//                                        new WebExpressionAuthorizationManager(
+//                                                "hasIpAddress('" + gatewayAddr +"')"))
+//
+//                                .anyRequest().permitAll()
         );
 
          http.csrf(AbstractHttpConfigurer::disable);
@@ -88,18 +86,4 @@ public class WebSecurity {
         return http.build();
     }
 
-    private String gatewayIpAddress(){
-//        List<ServiceInstance> instances = discoveryClient.getInstances("Gateway");
-//        if (instances != null && !instances.isEmpty()){
-//            try {
-//                EurekaServiceInstance gateway = (EurekaServiceInstance) instances.get(0);
-//                return gateway.getInstanceInfo().getIPAddr();
-//            } catch (ClassCastException ignored){
-//                return instances.get(0).getHost();
-//            }
-//        }
-////        throw new RuntimeException("Gateway not found!!!");
-        log.warn("GATEWAY NOT FOUND!!! FALLING BACK TO DEFAULT ADDRESS");
-        return environment.getProperty("gateway.ip");
-    }
 }
