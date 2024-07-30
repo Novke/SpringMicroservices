@@ -44,7 +44,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         try {
             LoginRequestCmd credentials = new ObjectMapper().readValue(request.getInputStream(), LoginRequestCmd.class);
 
-            log.info("User tried to login: " + credentials.getUsername());
+            log.debug("User tried to login: " + credentials.getUsername());
 
             UserDetails user = usersService.loadUserByUsername(credentials.getUsername());
 
@@ -72,7 +72,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         byte[] secretKeyBytes = Base64.getEncoder().encode(tokenSecret.getBytes());
         SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());
 
-        log.info("Successful auth! Building JWT...");
+        log.debug("Successful auth! Building JWT...");
 
         //Building JWT
         String token = Jwts.builder()

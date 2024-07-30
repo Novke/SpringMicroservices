@@ -82,11 +82,13 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
         }
 
         if (username == null){
+            log.debug("Username is null");
             return null;
         }
 
         UserDetails userDetails = usersService.loadUserByUsername(username);
 
+        log.debug("Authorization successful.");
         return new UsernamePasswordAuthenticationToken(username, null, userDetails.getAuthorities());
     }
 }

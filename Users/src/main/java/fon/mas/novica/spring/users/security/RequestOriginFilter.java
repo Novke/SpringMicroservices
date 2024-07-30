@@ -30,8 +30,10 @@ public class RequestOriginFilter implements Filter, Ordered {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         if (isRequestFromGateway(request)) {
+            log.debug("Request accepted...");
             filterChain.doFilter(servletRequest, servletResponse);
         } else {
+            log.debug("Request isn't from gateway");
             response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Direct access is denied");
         }
     }
