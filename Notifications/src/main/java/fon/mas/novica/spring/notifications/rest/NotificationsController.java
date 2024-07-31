@@ -1,6 +1,7 @@
 package fon.mas.novica.spring.notifications.rest;
 
-import fon.mas.novica.spring.notifications.model.Contact;
+import fon.mas.novica.spring.notifications.model.NewAssignmentNotif;
+import fon.mas.novica.spring.notifications.model.TaskCompletedNotif;
 import fon.mas.novica.spring.notifications.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +17,14 @@ public class NotificationsController {
 
     private final EmailService emailService;
     @PostMapping("/new-assignment")
-    public ResponseEntity<?> notifyAssignee(@RequestBody Contact contact){
-        emailService.notifyAssignment(contact);
+    public ResponseEntity<?> notifyAssignee(@RequestBody NewAssignmentNotif notification){
+        emailService.notifyAssignment(notification);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/task-completed")
+    public ResponseEntity<?> notifySUpervisorTaskCompleted(@RequestBody TaskCompletedNotif notification){
+        emailService.notifyTaskCompleted(notification);
         return ResponseEntity.noContent().build();
     }
 }

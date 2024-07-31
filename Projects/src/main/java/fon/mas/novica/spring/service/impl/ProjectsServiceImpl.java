@@ -7,7 +7,8 @@ import fon.mas.novica.spring.exception.UnauthorizedActionException;
 import fon.mas.novica.spring.exception.UserNotFoundException;
 import fon.mas.novica.spring.io.NotificationsServiceClient;
 import fon.mas.novica.spring.io.UsersServiceClient;
-import fon.mas.novica.spring.model.dto.notification.ContactInfo;
+import fon.mas.novica.spring.model.dto.notification.NewAssignmentNotif;
+import fon.mas.novica.spring.model.dto.notification.TaskCompletedNotif;
 import fon.mas.novica.spring.model.dto.project.CreateProjectCmd;
 import fon.mas.novica.spring.model.dto.project.ProjectDetails;
 import fon.mas.novica.spring.model.dto.project.ProjectInfo;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -76,7 +78,7 @@ public class ProjectsServiceImpl implements ProjectsService {
         ProjectEntity project = projectsRepository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException("Project with id " + id + " not found!"));
 
-        checkAuthorization(List.of(project.getSupervisorId()));
+        throwIfUnauthorized(List.of(project.getSupervisorId()));
 
         UserInfo assignee = findUserById(cmd.getAssigneeId());
         UserInfo supervisor = findUserById(cmd.getSupervisorId());
@@ -121,17 +123,26 @@ public class ProjectsServiceImpl implements ProjectsService {
         TaskEntity task = tasksRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException(String.format("Task with id %s not found!", id)));
 
-        checkAuthorization(List.of(task.getAssigneeId(), task.getSupervisorId()));
+        throwIfUnauthorized(List.of(task.getAssigneeId(), task.getSupervisorId()));
 
         task.setStatus(status);
         task.setUpdatedDate(LocalDate.now());
         if (status == Status.FINISHED) task.setEndDate(LocalDate.now());
 
-        return taskEntityToTaskInfo(tasksRepository.save(task));
+        TaskInfo taskInfo = taskEntityToTaskInfo(tasksRepository.save(task));
+
+        if (status == Status.FINISHED && !Objects.equals(task.getAssigneeId(), task.getSupervisorId())) {
+            UserInfo assignee = findUserById(task.getAssigneeId());
+            UserInfo supervisor = findUserById(task.getSupervisorId());
+
+            notifyTaskCompleted(assignee, supervisor, taskInfo);
+        }
+
+        return taskInfo;
     }
 
     private void notifyAssignee(UserInfo assignee, UserInfo supervisor, TaskInfo taskInfo){
-        ContactInfo contact = new ContactInfo(assignee.getFirstName(),
+        NewAssignmentNotif notification = new NewAssignmentNotif(assignee.getFirstName(),
                 assignee.getLastName(),
                 supervisor.getFullName(),
                 assignee.getEmail(),
@@ -139,10 +150,27 @@ public class ProjectsServiceImpl implements ProjectsService {
                 taskInfo.getPriority().name(),
                 taskInfo.getId());
 
-        notificationsService.notifyAssignee(contact);
+        notificationsService.notifyAssignee(notification);
     }
 
-    private void checkAuthorization(List<Long> ids){
+    private void notifyTaskCompleted(UserInfo assignee, UserInfo supervisor, TaskInfo taskInfo){
+        TaskCompletedNotif notification = new TaskCompletedNotif(
+                supervisor.getFirstName(),
+                supervisor.getLastName(),
+                taskInfo.getId(),
+                taskInfo.getTitle(),
+                taskInfo.getPriority().toString(),
+                supervisor.getEmail(),
+                assignee.getFullName(),
+                taskInfo.getDueDate());
+
+        notificationsService.notifyTaskCompleted(notification);
+    }
+
+    ///////////////////
+    //  UTIL FUNKCIJE
+    ///////////////////
+    private void throwIfUnauthorized(List<Long> ids){
         if (!usersService.verifyAuthorization(ids)) throw new UnauthorizedActionException();
     }
 

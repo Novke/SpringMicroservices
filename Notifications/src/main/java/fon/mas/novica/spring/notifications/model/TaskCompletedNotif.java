@@ -9,14 +9,15 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class Contact {
+public class TaskCompletedNotif {
 
     private String firstName;
     private String lastName;
-    private String supervisor;
-    private String email;
-    private String dueDate;
-    private String priority;
     private Long taskId;
+    private String taskTitle;
+    private String taskPriority;
+    private String email;
+    private String assigneeName;
+    private String dueDate;
 
 }

@@ -1,6 +1,7 @@
 package fon.mas.novica.spring.io;
 
-import fon.mas.novica.spring.model.dto.notification.ContactInfo;
+import fon.mas.novica.spring.model.dto.notification.NewAssignmentNotif;
+import fon.mas.novica.spring.model.dto.notification.TaskCompletedNotif;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
@@ -15,13 +16,26 @@ public interface NotificationsServiceClient {
     @PostMapping("/notify/new-assignment")
     @Retry(name="notifications-ms")
     @CircuitBreaker(name = "notifications-ms", fallbackMethod = "notifyAssigneeFallback")
-    void notifyAssignee(@RequestBody ContactInfo contactInfo);
+    void notifyAssignee(@RequestBody NewAssignmentNotif notification);
 
-    default void notifyAssigneeFallback(ContactInfo contactInfo, Throwable ex){
+    default void notifyAssigneeFallback(NewAssignmentNotif newAssignmentNotif, Throwable ex){
         Logger log = LoggerFactory.getLogger(this.getClass());
         log.error("NOTIFICATION SENDING FAILED FOR ASSIGNEE {} FOR THE TASK ID: {}",
-                contactInfo.getFirstName() + " " + contactInfo.getLastName(),
-                contactInfo.getTaskId(),
+                newAssignmentNotif.getFirstName() + " " + newAssignmentNotif.getLastName(),
+                newAssignmentNotif.getTaskId(),
+                ex);
+    }
+
+    @PostMapping("/notify/task-completed")
+    @Retry(name = "notifications-ms")
+    @CircuitBreaker(name = "notifications-ms", fallbackMethod = "notifyTaskCompletedFallback")
+    void notifyTaskCompleted(@RequestBody TaskCompletedNotif notification);
+
+    default void notifyTaskCompletedFallback(TaskCompletedNotif notification, Throwable ex){
+        Logger log = LoggerFactory.getLogger(this.getClass());
+        log.error("NOTIFICATION SENDING FAILED FOR SUPERVISOR {} FOR THE TASK ID: {}",
+                notification.getFirstName() + " " + notification.getLastName(),
+                notification.getTaskId(),
                 ex);
     }
 }

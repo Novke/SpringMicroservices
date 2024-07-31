@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class ContactInfo {
+public class NewAssignmentNotif {
 
 
     private String firstName;
