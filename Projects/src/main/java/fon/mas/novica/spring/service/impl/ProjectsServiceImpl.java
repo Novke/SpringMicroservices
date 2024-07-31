@@ -124,6 +124,7 @@ public class ProjectsServiceImpl implements ProjectsService {
         checkAuthorization(List.of(task.getAssigneeId(), task.getSupervisorId()));
 
         task.setStatus(status);
+        task.setUpdatedDate(LocalDate.now());
         if (status == Status.FINISHED) task.setEndDate(LocalDate.now());
 
         return taskEntityToTaskInfo(tasksRepository.save(task));
