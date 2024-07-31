@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -38,6 +39,13 @@ public class AuthorizationHeaderFilter implements GlobalFilter {
 
         private final HttpMethod method;
         private final String path;
+    }
+    private boolean isRequestWhitelisted(HttpMethod method, String path) {
+        AntPathMatcher pathMatcher = new AntPathMatcher();
+
+        return Arrays.stream(AllowedRequests.values()).anyMatch(route ->
+                route.getMethod().equals(method) && pathMatcher.match(route.getPath(),path)
+        );
     }
 
     @Override
@@ -76,11 +84,6 @@ public class AuthorizationHeaderFilter implements GlobalFilter {
         return chain.filter(exchange);
     }
 
-    private boolean isRequestWhitelisted(HttpMethod method, String path) {
-        return Arrays.stream(AllowedRequests.values()).anyMatch(route ->
-           route.getMethod().equals(method) && route.getPath().equals(path)
-        );
-    }
 
     private Mono<Void> onError(ServerWebExchange exchange, String message, HttpStatus httpStatus){
         ServerHttpResponse response = exchange.getResponse();
