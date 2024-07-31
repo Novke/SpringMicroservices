@@ -5,7 +5,9 @@ import fon.mas.novica.spring.exception.ProjectNotFoundException;
 import fon.mas.novica.spring.exception.TaskNotFoundException;
 import fon.mas.novica.spring.exception.UnauthorizedActionException;
 import fon.mas.novica.spring.exception.UserNotFoundException;
+import fon.mas.novica.spring.io.NotificationsServiceClient;
 import fon.mas.novica.spring.io.UsersServiceClient;
+import fon.mas.novica.spring.model.dto.notification.ContactInfo;
 import fon.mas.novica.spring.model.dto.project.CreateProjectCmd;
 import fon.mas.novica.spring.model.dto.project.ProjectDetails;
 import fon.mas.novica.spring.model.dto.project.ProjectInfo;
@@ -37,6 +39,7 @@ public class ProjectsServiceImpl implements ProjectsService {
     private final ProjectsRepository projectsRepository;
     private final TasksRepository tasksRepository;
     private final UsersServiceClient usersService;
+    private final NotificationsServiceClient notificationsService;
     private final ModelMapper mapper;
 
     @Override
@@ -73,19 +76,21 @@ public class ProjectsServiceImpl implements ProjectsService {
 
         ProjectEntity project = projectsRepository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException("Project with id " + id + " not found!"));
-        UserInfo asignee = findUserById(cmd.getAssigneeId());
+        UserInfo assignee = findUserById(cmd.getAssigneeId());
         UserInfo supervisor = findUserById(cmd.getSupervisorId());
 
         TaskEntity task = mapper.map(cmd, TaskEntity.class);
 
         project.addTask(task);
         task.setCreatedDate(LocalDate.now());
-        task.setAssigneeId(asignee.getId());
+        task.setAssigneeId(assignee.getId());
         task.setSupervisorId(supervisor.getId());
 
         TaskInfo taskInfo = mapper.map(tasksRepository.save(task), TaskInfo.class);
-        taskInfo.setAssigneeName(asignee.getFullName());
+        taskInfo.setAssigneeName(assignee.getFullName());
         taskInfo.setSupervisorName(supervisor.getFullName());
+
+        notifyAssignee(assignee, supervisor, taskInfo);
 
         return taskInfo;
     }
@@ -120,6 +125,18 @@ public class ProjectsServiceImpl implements ProjectsService {
         if (status == Status.FINISHED) task.setEndDate(LocalDate.now());
 
         return taskEntityToTaskInfo(tasksRepository.save(task));
+    }
+
+    private void notifyAssignee(UserInfo assignee, UserInfo supervisor, TaskInfo taskInfo){
+        ContactInfo contact = new ContactInfo(assignee.getFirstName(),
+                assignee.getLastName(),
+                supervisor.getFullName(),
+                assignee.getEmail(),
+                taskInfo.getDueDate(),
+                taskInfo.getPriority().name(),
+                taskInfo.getId());
+
+        notificationsService.notifyAssignee(contact);
     }
 
     private void checkAuthorization(List<Long> ids){
