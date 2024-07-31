@@ -6,7 +6,6 @@ import fon.mas.novica.spring.users.service.UsersService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +14,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -23,8 +23,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Base64;
-import java.util.Date;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -55,13 +55,13 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                             user.getAuthorities()
                     )
             );
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) {
         String username = ((User) authResult.getPrincipal()).getUsername();
         UserDetails userDetails = usersService.loadUserByUsername(username);
 
@@ -74,16 +74,30 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
         log.debug("Successful auth! Building JWT...");
 
-        //Building JWT
-        String token = Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(Date.from(Instant.now()))
-                .setExpiration(Date.from(Instant.now().plusMillis(tokenExpirationTime)))
-                .signWith(secretKey, SignatureAlgorithm.HS512)
-                .compact();
+        String token = generateToken(userDetails, secretKey, tokenExpirationTime);
 
         response.addHeader("id-token", token);
         response.addHeader("curr-user", userDetails.getUsername());
+    }
+
+    private String generateToken(UserDetails userDetails, SecretKey secretKey, Long tokenExpirationTime) {
+        // Extract roles from UserDetails
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        // Add roles to claims
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", roles);
+
+        //Building JWT
+        return Jwts.builder()
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(Date.from(Instant.now()))
+                .setExpiration(Date.from(Instant.now().plusMillis(tokenExpirationTime)))
+                .addClaims(claims)
+                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .compact();
     }
 
 }
