@@ -23,7 +23,6 @@ import fon.mas.novica.spring.service.ProjectsService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,6 +75,9 @@ public class ProjectsServiceImpl implements ProjectsService {
 
         ProjectEntity project = projectsRepository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException("Project with id " + id + " not found!"));
+
+        checkAuthorization(List.of(project.getSupervisorId()));
+
         UserInfo assignee = findUserById(cmd.getAssigneeId());
         UserInfo supervisor = findUserById(cmd.getSupervisorId());
 
