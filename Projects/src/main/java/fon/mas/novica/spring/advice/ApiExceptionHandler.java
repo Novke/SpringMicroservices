@@ -1,9 +1,6 @@
 package fon.mas.novica.spring.advice;
 
-import fon.mas.novica.spring.exception.ProjectNotFoundException;
-import fon.mas.novica.spring.exception.TaskNotFoundException;
-import fon.mas.novica.spring.exception.UnauthorizedActionException;
-import fon.mas.novica.spring.exception.UserNotFoundException;
+import fon.mas.novica.spring.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +35,16 @@ public class ApiExceptionHandler {
         log.debug(ex.getMessage(), ex);
 
         return new ResponseEntity<>(apiException, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = {
+            UsersServiceUnavailableException.class
+    })
+    ResponseEntity<?> handleUsersServiceUnavailableException(UsersServiceUnavailableException ex){
+        ApiException apiException = new ApiException(ex.getMessage(), ZonedDateTime.now());
+        log.warn(ex.getMessage(), ex);
+
+        return new ResponseEntity<>(apiException, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }
