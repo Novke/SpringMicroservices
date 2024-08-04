@@ -131,11 +131,15 @@ public class ProjectsServiceImpl implements ProjectsService {
 
         TaskInfo taskInfo = taskEntityToTaskInfo(tasksRepository.save(task));
 
-        if (status == Status.FINISHED && !Objects.equals(task.getAssigneeId(), task.getSupervisorId())) {
-            UserInfo assignee = findUserById(task.getAssigneeId());
-            UserInfo supervisor = findUserById(task.getSupervisorId());
+        if (status == Status.FINISHED){
+            usersService.increaseTaskCount(task.getAssigneeId());
 
-            notifyTaskCompleted(assignee, supervisor, taskInfo);
+            if (!Objects.equals(task.getAssigneeId(), task.getSupervisorId())) {
+                UserInfo assignee = findUserById(task.getAssigneeId());
+                UserInfo supervisor = findUserById(task.getSupervisorId());
+
+                notifyTaskCompleted(assignee, supervisor, taskInfo);
+            }
         }
 
         return taskInfo;
