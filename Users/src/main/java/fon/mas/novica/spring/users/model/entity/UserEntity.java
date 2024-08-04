@@ -29,6 +29,11 @@ public class UserEntity {
     private RoleEntity role;
     @Column(columnDefinition = "boolean default true")
     private boolean enabled = true;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private ExperienceEntity experience = new ExperienceEntity(this, 0);
 
-
+    public ExperienceEntity getExperience() {
+        if (experience == null) experience = new ExperienceEntity(this, 0);
+        return experience;
+    }
 }

@@ -28,4 +28,9 @@ public class UsersIO {
         return ResponseEntity.ok(usersService.checkAuthorization(authentication, ids));
     }
 
+    @PutMapping("/{id}/add-task")
+    public ResponseEntity<?> increaseTaskCount(@PathVariable Long id){
+        return ResponseEntity.ok(usersService.increaseTaskCount(id));
+    }
+
 }

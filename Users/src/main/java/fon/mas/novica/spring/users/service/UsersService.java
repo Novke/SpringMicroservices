@@ -19,6 +19,6 @@ public interface UsersService extends UserDetailsService {
     void enableUser(String user);
     void updatePassword(UpdatePasswordCmd cmd);
     UserInsight findById(Long id);
-
     Boolean checkAuthorization(Authentication authentication, List<Long> ids);
+    Integer increaseTaskCount(Long id);
 }

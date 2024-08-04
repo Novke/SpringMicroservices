@@ -1,5 +1,6 @@
 package fon.mas.novica.spring.users;
 
+import fon.mas.novica.spring.users.model.entity.ExperienceEntity;
 import fon.mas.novica.spring.users.model.entity.RoleEntity;
 import fon.mas.novica.spring.users.model.entity.UserEntity;
 import fon.mas.novica.spring.users.repository.RolesRepository;
@@ -67,7 +68,8 @@ public class UsersApplication {
                             "user",
                             encoder().encode("pass"),
                             rolesRepository.findById(2L).orElseThrow(),
-                            true));
+                            true,
+                            new ExperienceEntity()));
         }
     }
 

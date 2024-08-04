@@ -1,6 +1,7 @@
 package fon.mas.novica.spring.users.model.dto.user;
 
 import fon.mas.novica.spring.users.model.dto.role.RoleInfo;
+import fon.mas.novica.spring.users.model.dto.xp.ExperienceInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,4 +17,5 @@ public class UserInsight {
     private RoleInfo role;
     private String email;
     private boolean enabled;
+    private ExperienceInfo experience;
 }

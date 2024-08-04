@@ -110,6 +110,16 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
+    public Integer increaseTaskCount(Long userId) {
+        UserEntity user = usersRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User with id " + userId + " does not exist!"));
+
+        Integer xp = user.getExperience().increase();
+        usersRepository.save(user);
+        return xp;
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return usersRepository.findByUsername(username).map(
                 u -> new User(u.getUsername(),
